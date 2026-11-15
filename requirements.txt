@@ -1,0 +1,20 @@
+# Core dependencies / 核心依赖
+# NOTE: this list will be trimmed to the final import set after the refactor lands.
+numpy>=1.24
+pandas>=2.0
+scipy>=1.10
+matplotlib>=3.7
+networkx>=3.1
+scikit-learn>=1.3
+
+# Optional: faster CSV / parquet IO, richer tables
+pyarrow>=14.0
+
+# Dev / tooling / 开发工具链
+pytest>=7.4
+pytest-cov>=4.1
+ruff>=0.4
+black>=24.0
+
+# HTTP fetching for the data download script / 数据下载脚本
+requests>=2.31
