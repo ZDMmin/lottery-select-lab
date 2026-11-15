@@ -5,12 +5,12 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "lottery-select-lab"
 version = "0.1.0"
-description = "Lottery-Select-Lab / SSQ-Number-Engine / Number-Picking-Lab — a reproducible research workbench for combination selection: graph topology, multi-factor scoring and rolling back-tests."
+description = "Lottery-Select-Lab / SSQ-Number-Engine / Number-Picking-Lab — a reproducible research workbench for combination selection: neighbourhood-diffusion scoring, rank-factor mining, multi-horizon voting, and a built-in look-ahead-bias detector."
 readme = "README.md"
 requires-python = ">=3.9"
 license = { text = "MIT" }
 authors = [{ name = "Lottery-Select-Lab contributors" }]
-keywords = ["lottery", "combinatorics", "graph-analysis", "scoring-system", "backtesting", "data-science"]
+keywords = ["lottery", "combinatorics", "ranking", "scoring-system", "backtesting", "look-ahead-bias", "data-science"]
 classifiers = [
     "Development Status :: 4 - Beta",
     "Intended Audience :: Science/Research",
@@ -20,7 +20,6 @@ classifiers = [
 ]
 dependencies = [
     "numpy>=1.24",
-    "pandas>=2.0",
     "scipy>=1.10",
     "matplotlib>=3.7",
 ]
@@ -31,6 +30,9 @@ ml = ["scikit-learn>=1.3"]
 dev = ["pytest>=7.4", "pytest-cov>=4.1", "ruff>=0.4", "black>=24.0"]
 all = ["lottery-select-lab[graph,ml,dev]"]
 
+[project.scripts]
+lottery-select-lab = "lottery_select_lab.cli:main"
+
 [project.urls]
 Homepage = "https://github.com/<your-account>/lottery-select-lab"
 Issues = "https://github.com/<your-account>/lottery-select-lab/issues"
@@ -38,14 +40,18 @@ Issues = "https://github.com/<your-account>/lottery-select-lab/issues"
 [tool.setuptools.packages.find]
 where = ["src"]
 
-[tool.black]
-line-length = 100
-target-version = ["py39"]
-
-[tool.ruff]
-line-length = 100
-target-version = "py39"
-
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 addopts = "-q"
+
+[tool.ruff]
+line-length = 110
+target-version = "py39"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I"]
+ignore = ["E501"]
+
+[tool.black]
+line-length = 110
+target-version = ["py39"]
