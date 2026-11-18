@@ -216,6 +216,16 @@ This project is a **statistics and software-engineering exercise**. It does not 
 results, does not improve the odds of any ticket, and must not be used as gambling advice.
 Lottery play carries financial risk — if gambling stops being fun, seek help.
 
+## Acknowledgements
+
+The research ideas, experiment design and the original handwritten scripts (`legacy/handwritten_v1/`)
+are the author's own work. The refactoring, unit tests, documentation and generated demo artifacts
+in this repository were produced with **Doubao Work (豆包办公)**, an AI assistant, under the
+author's direction and review — every number in this README is reproducible from the committed
+code and the committed sample data.
+
+If you build on this work, a link back is appreciated but not required.
+
 ## License
 
 [MIT](LICENSE)
