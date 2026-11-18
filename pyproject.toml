@@ -34,8 +34,8 @@ all = ["lottery-select-lab[graph,ml,dev]"]
 lottery-select-lab = "lottery_select_lab.cli:main"
 
 [project.urls]
-Homepage = "https://github.com/<your-account>/lottery-select-lab"
-Issues = "https://github.com/<your-account>/lottery-select-lab/issues"
+Homepage = "https://github.com/ZDMmin/lottery-select-lab"
+Issues = "https://github.com/ZDMmin/lottery-select-lab/issues"
 
 [tool.setuptools.packages.find]
 where = ["src"]

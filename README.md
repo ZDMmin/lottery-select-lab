@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2B6CB0.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-41%20passed-2F855A.svg)](tests)
+[![Tests](https://img.shields.io/badge/tests-44%20passed-2F855A.svg)](tests)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-DD6B20.svg)](CONTRIBUTING.md)
 
 **A reproducible research workbench for red-ball combination selection** —
@@ -28,12 +28,13 @@ changes the story completely:
 
 | Variant | Avg hits / round | vs blind pick |
 | --- | --- | --- |
-| `mode="expanding"` (leakage-free) | **1.08** | 0.99× |
-| `mode="full"` (handwritten口径, uses future data) | **1.56** | 1.43× |
+| `mode="expanding"` (leakage-free) | **1.12** | 1.03× |
+| `mode="full"` (handwritten口径, uses future data) | **1.58** | 1.45× |
 
-Same code, same data, one flag. A 45% inflation that looks exactly like a working strategy.
-That experiment ships as a runnable demo (`examples/03_leakage_demo.py`), and CI asserts that
-the leaky variant can never score *below* the honest one.
+Same code, same data, one flag — a 41% inflation that looks exactly like a working strategy.
+That experiment ships as a runnable demo (`examples/03_leakage_demo.py`) on **283 real issues**
+(2025-01-02 → 2026-11-17), and CI asserts that the leaky variant can never score *below* the
+honest one.
 
 ---
 
@@ -46,7 +47,7 @@ the leaky variant can never score *below* the honest one.
 | **Leakage control** | `expanding` vs `full` is a first-class config flag, not an afterthought. |
 | **Analysis** | Rank-hit frequency, hit distribution vs hypergeometric baseline, rolling hit curves, strategy comparison. |
 | **Recommendation** | `predict_next()` — the empty `start_prediction()` stub from the handwritten version, finally implemented, with vote-level transparency. |
-| **Engineering** | Typed API, bilingual docstrings, 41 unit tests, CLI, CSV/JSON export, zero hard-coded paths. |
+| **Engineering** | Typed API, bilingual docstrings, 44 unit tests, CLI, CSV/JSON export, zero hard-coded paths. |
 
 ![Rank hit analysis](examples/output/01_rank_hit_counts.png)
 
@@ -55,7 +56,7 @@ the leaky variant can never score *below* the honest one.
 ## Quick start
 
 ```bash
-git clone https://github.com/<your-account>/lottery-select-lab.git
+git clone https://github.com/ZDMmin/lottery-select-lab.git
 cd lottery-select-lab
 pip install -r requirements.txt
 pip install -e .              # makes `python -m lottery_select_lab` available
@@ -71,9 +72,9 @@ python -m lottery_select_lab compare --data data/sample/ssq_sample.csv --charts
 <summary>As a library / 作为库调用</summary>
 
 ```python
-from lottery_select_lab import BacktestConfig, make_synthetic_draws, run
+from lottery_select_lab import BacktestConfig, load_draws, run
 
-draws = make_synthetic_draws(400, seed=7)          # or load_draws("data/ssq_history.csv")
+draws = load_draws("data/sample/ssq_sample.csv")   # 283 real issues, 2025-01-02 ~ 2026-11-17
 cfg = BacktestConfig(hit=2.0, diffusive=1.0, top_k=6, lookback=19,
                      horizons=range(1, 20), mode="expanding")
 
@@ -92,28 +93,33 @@ print(prediction.explain())     # 6 numbers + votes + per-expert breakdown
 ### CLI
 
 ```bash
-python -m lottery_select_lab generate-data --n 400 --seed 7 --out data/sample/ssq_sample.csv
+python -m lottery_select_lab generate-data --n 400 --seed 7 --out data/synthetic.csv
 python -m lottery_select_lab backtest --data data/sample/ssq_sample.csv --strategy rank-factor --charts
 python -m lottery_select_lab compare  --data data/sample/ssq_sample.csv --charts
 ```
 
 ---
 
-## Results on the bundled sample (400 synthetic issues, 381 rounds)
+## Results on the bundled sample (283 real issues, 264 rounds)
 
-| Strategy | Avg hits | Hit rate | Baseline | Lift |
-| --- | --- | --- | --- | --- |
-| A. `topk` | 1.094 | 0.182 | 1.091 | 1.00× |
-| B. `rank-factor` | 1.013 | 0.169 | 1.091 | 0.93× |
-| C. `horizon-top-k` | 1.039 | 0.173 | 1.091 | 0.95× |
-| D. `ensemble` | 1.081 | 0.180 | 1.091 | 0.99× |
+| Strategy | Avg hits | Hit rate | Baseline | Lift | z |
+| --- | --- | --- | --- | --- | --- |
+| A. `topk` | 1.133 | 0.189 | 1.091 | 1.04× | 0.78 |
+| B. `rank-factor` | 1.042 | 0.174 | 1.091 | 0.95× | −0.92 |
+| C. `horizon-top-k` | 1.152 | 0.192 | 1.091 | 1.06× | 1.13 |
+| D. `ensemble` | 1.125 | 0.188 | 1.091 | 1.03× | 0.64 |
 
-**Read this table as the point, not as a failure.** On uniform-random data every strategy
-collapses onto the analytic baseline `6 × 6/33 ≈ 1.09`. That is exactly what the framework
-should report — and it is why the repository's value is methodological, not predictive.
+**Read this table as the point, not as a failure.** On real draws every strategy collapses onto
+the analytic baseline `6 × 6/33 ≈ 1.09`. The best-looking lift (C, 1.06×) sits **1.13 standard
+errors** from the baseline — well inside noise. That is exactly what the framework should
+report, and it is why the repository's value is methodological, not predictive.
 
-Strategy B looks worse than A by chance (381 rounds is a small sample); the rolling curves show
-all four oscillating around the baseline without persistent separation:
+The `z` column is computed analytically, not bootstrapped: each round's hit count follows
+`Hypergeometric(33, 6, 6)` because the prediction set is fixed before the draw, so
+`z = (avg − baseline) / sqrt(var/n)`. `|z| < 2` means "this is luck".
+
+The rolling curves show all four strategies oscillating around the baseline with no persistent
+separation:
 
 ![Rolling hits](examples/output/02_rolling_hits.png)
 
@@ -138,8 +144,8 @@ lottery-select-lab/
 ├── scripts/                     # run_demo.py, download_data.py
 ├── docs/                        # ALGORITHM.md, REFACTOR_NOTES.md
 ├── legacy/handwritten_v1/       # the original 6 scripts, preserved verbatim
-├── data/sample/                 # small committed sample (200 issues)
-└── tests/                       # 41 pytest cases
+├── data/sample/                 # 283 real issues, committed for reproducible demos
+└── tests/                       # 44 pytest cases
 ```
 
 ### Why `legacy/` is in the repo
@@ -152,8 +158,9 @@ The full mapping table lives in [docs/REFACTOR_NOTES.md](docs/REFACTOR_NOTES.md)
 
 ## Data
 
-The repo ships only `data/sample/ssq_sample.csv` (200 synthetic issues) so that every demo runs
-without downloads. To work with real history:
+The repo ships `data/sample/ssq_sample.csv` — **283 real issues** (2025-01-02 → 2026-11-17),
+about 12 KB — so every demo reproduces the numbers in this README offline and out of the box.
+Larger histories are git-ignored; fetch them with:
 
 ```bash
 # from a remote text/csv source
@@ -167,7 +174,7 @@ Accepted format (delimiters auto-detected; reds may be space/slash/plus separate
 
 ```
 issue,date,reds,blue
-2024001,2024-01-02,3 8 12 19 25 31,7
+2025001,2025-01-02,2 3 17 18 22 33,16
 ```
 
 `data/raw/` and large CSVs are git-ignored — see `.gitignore`.

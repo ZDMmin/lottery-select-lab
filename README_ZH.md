@@ -2,7 +2,7 @@
 
 [![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2B6CB0.svg)](LICENSE)
-[![Tests](https://img.shields.io/badge/tests-41%20passed-2F855A.svg)](tests)
+[![Tests](https://img.shields.io/badge/tests-44%20passed-2F855A.svg)](tests)
 
 **一套可复现的双色球红球组合研究工作台**——
 邻域扩散打分、位次因子挖掘、多窗口共识投票，统一在一个框架里，
@@ -26,10 +26,10 @@
 
 | 口径 | 每期平均命中数 | 相对盲选 |
 | --- | --- | --- |
-| `mode="expanding"`（无前视） | **1.08** | 0.99× |
-| `mode="full"`（手稿口径，看得到未来） | **1.56** | 1.43× |
+| `mode="expanding"`（无前视） | **1.12** | 1.03× |
+| `mode="full"`（手稿口径，看得到未来） | **1.58** | 1.45× |
 
-同一份代码、同一批数据、只改一个开关，命中数被虚增 45%。
+同一份代码、同一批真实数据（283 期，2025-01-02 ~ 2026-11-17）、只改一个开关，命中数被虚增 41%。
 这个实验做成了可直接运行的 demo（`examples/03_leakage_demo.py`），
 并且 CI 里有一条测试断言：**泄漏口径的分数不可能低于诚实口径**。
 
@@ -76,7 +76,7 @@
 ## 快速开始
 
 ```bash
-git clone https://github.com/<your-account>/lottery-select-lab.git
+git clone https://github.com/ZDMmin/lottery-select-lab.git
 cd lottery-select-lab
 pip install -r requirements.txt
 pip install -e .              # 让 `python -m lottery_select_lab` 可用
@@ -92,9 +92,9 @@ python -m lottery_select_lab compare --data data/sample/ssq_sample.csv --charts
 <summary>作为库使用</summary>
 
 ```python
-from lottery_select_lab import BacktestConfig, make_synthetic_draws, run
+from lottery_select_lab import BacktestConfig, load_draws, run
 
-draws = make_synthetic_draws(400, seed=7)      # 或 load_draws("data/ssq_history.csv")
+draws = load_draws("data/sample/ssq_sample.csv")   # 283 期真实数据
 cfg = BacktestConfig(hit=2.0, diffusive=1.0, top_k=6, lookback=19,
                      horizons=range(1, 20), mode="expanding")
 
@@ -113,25 +113,30 @@ print(prediction.explain())    # 6 个号 + 票数 + 每个窗口专家的意见
 ### 命令行
 
 ```bash
-python -m lottery_select_lab generate-data --n 400 --seed 7 --out data/sample/ssq_sample.csv
+python -m lottery_select_lab generate-data --n 400 --seed 7 --out data/synthetic.csv
 python -m lottery_select_lab backtest --data data/sample/ssq_sample.csv --strategy rank-factor --charts
 python -m lottery_select_lab compare  --data data/sample/ssq_sample.csv --charts
 ```
 
 ---
 
-## 样本数据上的结果（400 期合成数据 / 381 轮回测）
+## 真实样本上的结果（283 期 / 264 轮回测）
 
-| 策略 | 平均命中数 | 命中率 | 基线 | 增益 |
-| --- | --- | --- | --- | --- |
-| A. `topk` | 1.094 | 0.182 | 1.091 | 1.00× |
-| B. `rank-factor` | 1.013 | 0.169 | 1.091 | 0.93× |
-| C. `horizon-top-k` | 1.039 | 0.173 | 1.091 | 0.95× |
-| D. `ensemble` | 1.081 | 0.180 | 1.091 | 0.99× |
+| 策略 | 平均命中数 | 命中率 | 基线 | 增益 | z |
+| --- | --- | --- | --- | --- | --- |
+| A. `topk` | 1.133 | 0.189 | 1.091 | 1.04× | 0.78 |
+| B. `rank-factor` | 1.042 | 0.174 | 1.091 | 0.95× | −0.92 |
+| C. `horizon-top-k` | 1.152 | 0.192 | 1.091 | 1.06× | 1.13 |
+| D. `ensemble` | 1.125 | 0.188 | 1.091 | 1.03× | 0.64 |
 
-**这张表本身就是结论**：在均匀随机数据上，所有策略都塌回解析基线 `6 × 6/33 ≈ 1.09`。
-框架就该如实报告这个结果——这也是本仓库的价值在"方法学"而非"预测"的原因。
-B 比 A 略低纯属抽样波动（381 轮样本量不大），滚动曲线可以看到四条线都围着基线震荡：
+**这张表本身就是结论**：在真实开奖数据上，所有策略都塌回解析基线 `6 × 6/33 ≈ 1.09`。
+看起来最漂亮的 C（1.06×）也只偏离基线 **1.13 个标准误**——典型噪声。
+框架就该如实报告这个结果，这也是本仓库的价值在"方法学"而非"预测"的原因。
+
+`z` 列是解析算出来的，不是 bootstrap：预测集合在开奖前就固定，因此每轮命中数严格服从
+`Hypergeometric(33, 6, 6)`，于是 `z = (均值 − 基线) / sqrt(方差/n)`。`|z| < 2` 就是运气。
+
+滚动曲线里四条线都围着基线震荡，没有持续分离：
 
 ![滚动命中曲线](examples/output/02_rolling_hits.png)
 
@@ -156,8 +161,8 @@ lottery-select-lab/
 ├── scripts/                     # run_demo.py、download_data.py
 ├── docs/                        # ALGORITHM.md、REFACTOR_NOTES.md
 ├── legacy/handwritten_v1/       # 原始 6 份手稿，原样保留
-├── data/sample/                 # 随仓库提交的小样本（200 期）
-└── tests/                       # 41 个 pytest 用例
+├── data/sample/                 # 283 期真实数据，随仓库提交，保证 demo 可复现
+└── tests/                       # 44 个 pytest 用例
 ```
 
 ### 为什么把 `legacy/` 放进仓库
@@ -170,8 +175,8 @@ lottery-select-lab/
 
 ## 数据
 
-仓库只带 `data/sample/ssq_sample.csv`（200 期合成数据），确保任何 demo 都能离线跑通。
-要用真实历史：
+仓库带 `data/sample/ssq_sample.csv`——**283 期真实开奖**（2025-01-02 → 2026-11-17），约 12 KB，
+让每个 demo 都能离线复现本文所有数字。更长的历史不入库，用脚本抓取：
 
 ```bash
 # 从远程文本/CSV 数据源下载
@@ -185,7 +190,7 @@ python scripts/download_data.py --from-file ~/Desktop/彩票研究/data_3.txt --
 
 ```
 issue,date,reds,blue
-2024001,2024-01-02,3 8 12 19 25 31,7
+2025001,2025-01-02,2 3 17 18 22 33,16
 ```
 
 `data/raw/` 与大体积 CSV 已被 `.gitignore` 排除。
