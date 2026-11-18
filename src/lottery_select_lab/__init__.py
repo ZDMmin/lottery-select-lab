@@ -37,7 +37,9 @@ from .metrics import (
     hit_count,
     hit_distribution,
     lift_vs_baseline,
+    round_variance,
     summarize,
+    z_score,
 )
 from .models import (
     RED_POOL_SIZE,
@@ -100,6 +102,8 @@ __all__ = [
     "average_hit_rate",
     "baseline_hits",
     "lift_vs_baseline",
+    "z_score",
+    "round_variance",
     "summarize",
     "format_report",
     # backtest

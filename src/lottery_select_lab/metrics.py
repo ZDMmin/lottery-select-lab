@@ -54,6 +54,33 @@ def lift_vs_baseline(observed: float, top_k: int = REDS_PER_DRAW) -> float:
     return observed / base if base else 0.0
 
 
+def round_variance(top_k: int = REDS_PER_DRAW, pool: int = RED_POOL_SIZE) -> float:
+    """Variance of hits in one round under blind picking. / 盲选单轮命中数的方差。
+
+    命中数服从超几何分布 ``Hypergeometric(33, 6, k)``，其方差为::
+
+        Var = k · (6/33) · (1 - 6/33) · (33 - k) / 32
+
+    为什么需要它：预测集合由**过去**决定，与**未来**开奖独立，因此每一轮的命中数都严格服从
+    这个分布。有了方差就能把「1.06 倍增益」翻译成「几个标准差」——这是区分信号与运气的唯一硬指标。
+    """
+    p = REDS_PER_DRAW / pool
+    return top_k * p * (1 - p) * (pool - top_k) / (pool - 1)
+
+
+def z_score(average: float, rounds: int, top_k: int = REDS_PER_DRAW) -> float:
+    """Standard errors away from the blind-picking baseline. / 相对基线偏离几个标准误。
+
+    ``|z| < 2`` 时几乎可以断定是抽样噪声。本仓库所有"看起来有效"的策略都需要过这一关。
+    """
+    if rounds < 1:
+        return 0.0
+    variance = round_variance(top_k)
+    if variance <= 0:
+        return 0.0
+    return (average - baseline_hits(top_k)) / (variance / rounds) ** 0.5
+
+
 def summarize(hits: Sequence[int], top_k: int = REDS_PER_DRAW) -> Dict[str, float]:
     """One-stop summary dict used by CLI and README tables. / 汇总字典，供 CLI 与 README 表格使用。"""
     base = baseline_hits(top_k)
@@ -65,6 +92,7 @@ def summarize(hits: Sequence[int], top_k: int = REDS_PER_DRAW) -> Dict[str, floa
         "baseline_hits": base,
         "lift": observed / base if base else 0.0,
         "max_hits": float(max(hits)) if hits else 0.0,
+        "z_score": z_score(observed, len(hits), top_k),
     }
 
 
@@ -77,12 +105,16 @@ def format_report(
 
     / 把汇总行渲染成纯文本表格，替代手稿里那套 ``LOG_*.txt`` 拼接。
     """
-    header = f"{'run':<28}{'rounds':>8}{'avg_hits':>10}{'hit_rate':>10}{'baseline':>10}{'lift':>8}"
+    header = (
+        f"{'run':<26}{'rounds':>7}{'avg_hits':>10}{'hit_rate':>10}"
+        f"{'baseline':>10}{'lift':>8}{'z':>7}"
+    )
     lines: List[str] = [title, "=" * len(header), header, "-" * len(header)]
     for label, row in zip(labels, summaries):
         lines.append(
-            f"{label:<28}{int(row['rounds']):>8}{row['average_hits']:>10.3f}"
-            f"{row['average_hit_rate']:>10.3f}{row['baseline_hits']:>10.3f}{row['lift']:>8.2f}x"
+            f"{label:<26}{int(row['rounds']):>7}{row['average_hits']:>10.3f}"
+            f"{row['average_hit_rate']:>10.3f}{row['baseline_hits']:>10.3f}"
+            f"{row['lift']:>7.2f}x{row.get('z_score', 0.0):>7.2f}"
         )
     lines.append("-" * len(header))
     return "\n".join(lines)

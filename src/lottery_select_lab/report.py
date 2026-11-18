@@ -75,12 +75,13 @@ def write_summary_table(
     out = Path(path)
     out.parent.mkdir(parents=True, exist_ok=True)
     lines = [f"## {title}", ""]
-    lines.append("| strategy | rounds | avg hits | hit rate | baseline | lift |")
-    lines.append("| --- | --- | --- | --- | --- | --- |")
+    lines.append("| strategy | rounds | avg hits | hit rate | baseline | lift | z |")
+    lines.append("| --- | --- | --- | --- | --- | --- | --- |")
     for label, row in zip(labels, rows):
         lines.append(
             f"| {label} | {int(row['rounds'])} | {row['average_hits']:.3f} | "
-            f"{row['average_hit_rate']:.3f} | {row['baseline_hits']:.3f} | {row['lift']:.2f}x |"
+            f"{row['average_hit_rate']:.3f} | {row['baseline_hits']:.3f} | "
+            f"{row['lift']:.2f}x | {row.get('z_score', 0.0):.2f} |"
         )
     lines += ["", "```text", format_report(rows, labels, title=title), "```", ""]
     out.write_text("\n".join(lines), encoding="utf-8")

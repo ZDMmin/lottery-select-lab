@@ -27,7 +27,9 @@ from lottery_select_lab.metrics import (
     baseline_hits,
     hit_count,
     hit_distribution,
+    round_variance,
     summarize,
+    z_score,
 )
 from lottery_select_lab.predict import predict_next
 from lottery_select_lab.ranking import ranks_of
@@ -56,6 +58,25 @@ def test_summarize_consistency() -> None:
     np.testing.assert_allclose(row["average_hits"], 2.0)
     np.testing.assert_allclose(row["average_hit_rate"], 2.0 / 6)
     np.testing.assert_allclose(row["lift"], 2.0 / baseline_hits(6))
+
+
+def test_round_variance_matches_hypergeometric() -> None:
+    """单轮方差 == 超几何分布方差。 / analytic variance of Hypergeometric(33, 6, k)."""
+    expected = 6 * (6 / 33) * (1 - 6 / 33) * (33 - 6) / (33 - 1)
+    np.testing.assert_allclose(round_variance(6), expected)
+
+
+def test_z_score_is_zero_at_baseline_and_scales_with_n() -> None:
+    base = baseline_hits(6)
+    np.testing.assert_allclose(z_score(base, 264), 0.0, atol=1e-12)
+    # 同样的偏差，样本翻四倍，z 翻两倍 / same gap, 4x rounds -> 2x z.
+    np.testing.assert_allclose(z_score(base + 0.05, 4 * 264) / z_score(base + 0.05, 264), 2.0)
+
+
+def test_z_score_flags_noise_on_real_scale() -> None:
+    """真实样本上最优策略的 z 必须落在噪声区间。 / the real-data lift must read as noise."""
+    row = summarize([1, 1, 2, 1, 1, 1, 0, 1] * 33, top_k=6)
+    assert abs(row["z_score"]) < 2
 
 
 def test_strategy_round_counts(draws) -> None:
