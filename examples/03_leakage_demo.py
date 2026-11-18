@@ -15,7 +15,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from lottery_select_lab import BacktestConfig, make_synthetic_draws, run, summarize
+from demo_data import load_demo_draws
+
+from lottery_select_lab import BacktestConfig, run, summarize
 from lottery_select_lab.viz import plot_strategy_comparison
 
 OUT = Path(__file__).parent / "output"
@@ -23,7 +25,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 
 def main() -> None:
-    draws = make_synthetic_draws(400, seed=7)
+    draws = load_demo_draws()
     base = dict(hit=2.0, diffusive=1.0, top_k=6, lookback=19)
 
     honest = run("ensemble", draws, BacktestConfig(**base, mode="expanding"))

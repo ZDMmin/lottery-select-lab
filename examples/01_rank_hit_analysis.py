@@ -13,8 +13,9 @@ from __future__ import annotations
 from pathlib import Path
 
 import numpy as np
+from demo_data import load_demo_draws
 
-from lottery_select_lab import BacktestConfig, make_synthetic_draws
+from lottery_select_lab import BacktestConfig
 from lottery_select_lab.ranking import ranks_of
 from lottery_select_lab.viz import plot_rank_hit_counts
 from lottery_select_lab.weights import weight_matrix, window_scores
@@ -39,7 +40,7 @@ def rank_hit_counts(draws, hit: float, diffusive: float, lookback: int) -> np.nd
 
 
 def main() -> None:
-    draws = make_synthetic_draws(300, seed=42)
+    draws = load_demo_draws()
     cfg = BacktestConfig(hit=2.0, diffusive=1.0, lookback=19)
 
     counts = rank_hit_counts(draws, cfg.hit, cfg.diffusive, cfg.lookback)
@@ -56,7 +57,7 @@ def main() -> None:
         counts,
         OUT / "01_rank_hit_counts.png",
         title="Which rank positions actually get hit?",
-        subtitle=f"口径 expanding · 回看 {cfg.lookback} 期 · {rounds} 轮",
+        subtitle=f"口径 expanding · 回看 {cfg.lookback} 期 · {rounds} 轮 · 真实样本",
     )
     print(f"[ok] chart -> {path}")
 

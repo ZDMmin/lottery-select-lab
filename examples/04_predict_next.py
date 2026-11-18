@@ -14,8 +14,9 @@ import json
 from pathlib import Path
 
 import numpy as np
+from demo_data import load_demo_draws
 
-from lottery_select_lab import BacktestConfig, make_synthetic_draws
+from lottery_select_lab import BacktestConfig
 from lottery_select_lab.predict import predict_next
 from lottery_select_lab.viz import plot_score_landscape
 
@@ -24,7 +25,7 @@ OUT.mkdir(parents=True, exist_ok=True)
 
 
 def main() -> None:
-    draws = make_synthetic_draws(400, seed=7)
+    draws = load_demo_draws()
     cfg = BacktestConfig(hit=2.0, diffusive=1.0, top_k=6, lookback=19, mode="expanding")
 
     prediction = predict_next(draws, cfg)

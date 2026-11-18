@@ -12,7 +12,9 @@ from __future__ import annotations
 
 from pathlib import Path
 
-from lottery_select_lab import BacktestConfig, make_synthetic_draws, run, summarize
+from demo_data import load_demo_draws
+
+from lottery_select_lab import BacktestConfig, run, summarize
 from lottery_select_lab.metrics import format_report, lift_vs_baseline
 from lottery_select_lab.report import export_rounds_csv, write_summary_table
 from lottery_select_lab.viz import plot_hit_distribution, plot_rolling_hits, plot_strategy_comparison
@@ -29,20 +31,22 @@ STRATEGY_LABELS = {
 
 
 def main() -> None:
-    draws = make_synthetic_draws(400, seed=7)
+    draws = load_demo_draws()
     cfg = BacktestConfig(hit=2.0, diffusive=1.0, top_k=6, lookback=19, mode="expanding")
 
     results = {}
     labels = []
     rows = []
+    rounds = 0
     for key, label in STRATEGY_LABELS.items():
         result = run(key, draws, cfg)
         results[label] = result
         labels.append(label)
         rows.append(summarize([r.hits for r in result.rounds], cfg.top_k))
+        rounds = result.n_rounds
         export_rounds_csv(result, OUT / f"02_{key}_rounds.csv")
 
-    print(format_report(rows, labels, title=f"strategy comparison ({len(draws)} synthetic issues)"))
+    print(format_report(rows, labels, title=f"strategy comparison ({len(draws)} issues, {rounds} rounds)"))
     print(f"\nbaseline (blind pick) = {rows[0]['baseline_hits']:.3f} hits/round")
     for label, row in zip(labels, rows):
         print(f"  {label:<32} lift = {lift_vs_baseline(row['average_hits'], cfg.top_k):.2f}x")
@@ -52,7 +56,7 @@ def main() -> None:
         [r["average_hits"] for r in rows],
         rows[0]["baseline_hits"],
         OUT / "02_strategy_comparison.png",
-        title="Strategy comparison — average hits per round (synthetic data, 381 rounds)",
+        title=f"Strategy comparison — average hits per round ({rounds} rounds)",
     )
     plot_rolling_hits(results, OUT / "02_rolling_hits.png")
     plot_hit_distribution(results[labels[1]], OUT / "02_rank_hit_distribution.png")
