@@ -221,3 +221,12 @@ Lottery play carries financial risk — if gambling stops being fun, seek help.
 [MIT](LICENSE)
 
 > （注：部分内容由豆包 AI 生成）
+>
+> ## Acknowledgements / 致谢
+
+The research ideas, experiments and original handwritten scripts are the author's own work.
+The refactoring, tests, documentation and demo artifacts in this repository were produced with
+**Doubao Work (豆包办公)**, an AI assistant, under the author's direction and review.
+
+本仓库的研究思路、实验设计与原始手写脚本均来自作者本人；重构后的代码、单测、文档与示例产物
+由 **豆包办公（Doubao Work）** 在作者指导下生成，并经作者逐项复核。
