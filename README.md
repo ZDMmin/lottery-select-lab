@@ -1,15 +1,22 @@
 # Lottery-Select-Lab / SSQ-Number-Engine / Number-Picking-Lab
 
+[![CI](https://github.com/ZDMmin/lottery-select-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/ZDMmin/lottery-select-lab/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2B6CB0.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-44%20passed-2F855A.svg)](tests)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-DD6B20.svg)](CONTRIBUTING.md)
 
-**A reproducible research workbench for red-ball combination selection** —
-neighbourhood-diffusion scoring, rank-position factor mining, and multi-horizon consensus
-voting, wired into one framework with a built-in **look-ahead-bias detector**.
+> **Same code, same data, one flag: 1.12 → 1.58 average hits per round.**
+> That +41% is look-ahead bias, not skill. This repo is a runnable case study of how a
+> back-test fools its own author — and of the honest measurement that proves the remaining
+> edge is noise (`z = 0.64`, inside the hypergeometric band).
 
-> 中文完整版文档：[README_ZH.md](README_ZH.md)
+![Social preview](docs/assets/social-preview.png)
+
+Neighbourhood-diffusion scoring, rank-position factor mining, multi-horizon consensus voting,
+283 real issues, 44 tests — one framework, one flag that separates honest from leaked.
+
+> 中文完整版文档：[README_ZH.md](README_ZH.md) · 60 秒跑通全部实验：`python scripts/run_demo.py`
 
 ---
 

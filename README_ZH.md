@@ -1,14 +1,21 @@
 # Lottery-Select-Lab / SSQ-Number-Engine / Number-Picking-Lab
 
+[![CI](https://github.com/ZDMmin/lottery-select-lab/actions/workflows/ci.yml/badge.svg)](https://github.com/ZDMmin/lottery-select-lab/actions/workflows/ci.yml)
 [![Python](https://img.shields.io/badge/python-3.9%2B-3776AB?logo=python&logoColor=white)](https://www.python.org/)
 [![License: MIT](https://img.shields.io/badge/license-MIT-2B6CB0.svg)](LICENSE)
 [![Tests](https://img.shields.io/badge/tests-44%20passed-2F855A.svg)](tests)
 
-**一套可复现的双色球红球组合研究工作台**——
-邻域扩散打分、位次因子挖掘、多窗口共识投票，统一在一个框架里，
-并内置一个**前视偏差检测器**。
+> **同一份代码、同一批数据，只切一个开关：每期平均命中 1.12 → 1.58。**
+> 多出来的 41% 不是本事，是前视偏差。这个仓库是一个可以直接运行的案例：
+> 回测是怎么把自己骗过去的，以及诚实口径下剩下的那点"优势"为什么是噪声
+> （`z = 0.64`，落在超几何分布的正常波动区间内）。
 
-> English version: [README.md](README.md)
+![社交预览图](docs/assets/social-preview.png)
+
+邻域扩散打分、位次因子挖掘、多窗口共识投票——283 期真实开奖、44 个单元测试，
+一个框架，一个开关，区分诚实与泄漏。
+
+> English version: [README.md](README.md) · 60 秒跑通全部实验：`python scripts/run_demo.py`
 
 ---
 
